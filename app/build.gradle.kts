@@ -55,6 +55,17 @@ android {
     }
 
     signingConfigs {
+        // Pinned debug keystore (app/debug.keystore): CI runners used to generate a fresh
+        // debug key on every run, so each release had a different signature and could not
+        // be installed over the previous one ("signature conflict"). This is the standard
+        // Android debug key (android/androiddebugkey) — not a secret — committed so every
+        // build signs identically and upgrades work in place.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         val ksFile = System.getenv("KEYSTORE_FILE")
         val ksPassword = System.getenv("KEYSTORE_PASSWORD")
         val ksAlias = System.getenv("KEY_ALIAS")
