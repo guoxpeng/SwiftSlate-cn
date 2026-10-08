@@ -1,0 +1,2 @@
+- fix: silence MissingTranslation lint for new dashboard strings
+- fix: settings scroll, stuck-service detection, battery-optimization nudge
