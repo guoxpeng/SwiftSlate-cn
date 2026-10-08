@@ -89,7 +89,11 @@ android {
         create("preview") {
             initWith(getByName("release"))
             applicationIdSuffix = ".preview"
-            versionNameSuffix = "-preview"
+            // No versionNameSuffix: the release pipeline already versions every build
+            // (e.g. 1.0.82), and a "-preview" tail just clutters the version shown in
+            // Settings > Apps and the in-app About card. Side-by-side distinction from
+            // a stable install comes from the applicationId suffix and the preview
+            // label/icon overrides, not the version string.
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
             // Override with the no-op service whose class name matches WeChat's whitelist.
