@@ -344,6 +344,10 @@ jobs:
           # on empty input, and the fallback below turns that into a maintenance note.
           CHANGELOG=$(git log "$RANGE" --pretty=format:"- %s" --no-merges \
             | grep -iv "^- \(ci:\|merge\|changelog\|bump\|docs(fastlane)\)" \
+            | sed -e 's/^- fix: */- 修复：/' -e 's/^- feat: */- 新增：/' \
+              -e 's/^- docs: */- 文档：/' -e 's/^- chore: */- 杂项：/' \
+              -e 's/^- refactor: */- 重构：/' -e 's/^- perf: */- 性能：/' \
+              -e 's/^- test: */- 测试：/' -e 's/^- build: */- 构建：/' \
             | head -20 || true)
           if [ -z "$CHANGELOG" ]; then
             CHANGELOG="- Maintenance and bug fixes"
@@ -426,19 +430,12 @@ jobs:
           name: changelog-${{ needs.version.outputs.tag }}
           path: /tmp/
 
-      - name: Write versionCode file for F-Droid auto-update
-        shell: bash
-        env:
-          VERSION_CODE: ${{ needs.version.outputs.version_code }}
-        run: echo "$VERSION_CODE" > artifacts/versionCode.txt
-
       - name: Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ needs.version.outputs.tag }}
           files: |
             artifacts/SwiftSlate-*.apk
-            artifacts/versionCode.txt
           name: SwiftSlate 微信版 ${{ needs.version.outputs.tag }}
           body_path: /tmp/changelog.md
           draft: false
