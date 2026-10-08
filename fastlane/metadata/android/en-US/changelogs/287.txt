@@ -1,0 +1,3 @@
+- feat: match upstream v1.0.82 model changes
+- fix: silence MissingTranslation lint for new dashboard strings
+- fix: settings scroll, stuck-service detection, battery-optimization nudge
