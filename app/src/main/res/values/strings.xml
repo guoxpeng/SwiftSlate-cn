@@ -156,12 +156,12 @@
     <string name="dashboard_service_killed_title">SwiftSlate was interrupted</string>
     <string name="dashboard_service_killed_message">The background service stopped unexpectedly. Re-enable it in accessibility settings to keep using commands.</string>
     <string name="dashboard_service_killed_dismiss">Dismiss</string>
-    <string name="dashboard_service_stuck_title">Accessibility service is stuck</string>
-    <string name="dashboard_service_stuck_message">System settings still shows it as on, but the service process has stopped (usually killed by the system battery saver). Turn it off and back on in system settings to recover.</string>
-    <string name="dashboard_service_stuck_action">Open system settings</string>
-    <string name="dashboard_battery_title">Recommend disabling battery optimization</string>
-    <string name="dashboard_battery_message">The system battery saver can silently kill the accessibility service in the background. Setting it to unrestricted greatly reduces the chance of it being killed.</string>
-    <string name="dashboard_battery_action">Set unrestricted</string>
+    <string name="dashboard_service_stuck_title" tools:ignore="MissingTranslation">Accessibility service is stuck</string>
+    <string name="dashboard_service_stuck_message" tools:ignore="MissingTranslation">System settings still shows it as on, but the service process has stopped (usually killed by the system battery saver). Turn it off and back on in system settings to recover.</string>
+    <string name="dashboard_service_stuck_action" tools:ignore="MissingTranslation">Open system settings</string>
+    <string name="dashboard_battery_title" tools:ignore="MissingTranslation">Recommend disabling battery optimization</string>
+    <string name="dashboard_battery_message" tools:ignore="MissingTranslation">The system battery saver can silently kill the accessibility service in the background. Setting it to unrestricted greatly reduces the chance of it being killed.</string>
+    <string name="dashboard_battery_action" tools:ignore="MissingTranslation">Set unrestricted</string>
 
     <!-- WeChat compatibility (preview-only hint) -->
     <string name="dashboard_wechat_hint_title" tools:ignore="MissingTranslation">WeChat compatibility</string>
