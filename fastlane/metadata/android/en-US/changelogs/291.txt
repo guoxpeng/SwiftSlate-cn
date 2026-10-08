@@ -1,0 +1,5 @@
+- 修复：固定 debug 签名，解决跨版本签名冲突
+- 修复：去掉版本号后面的 -preview 后缀
+- 新增：match upstream v1.0.82 model changes
+- 修复：silence MissingTranslation lint for new dashboard strings
+- 修复：settings scroll, stuck-service detection, battery-optimization nudge
