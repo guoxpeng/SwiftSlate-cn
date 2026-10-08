@@ -7,7 +7,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
@@ -256,6 +258,10 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                // 修复：之前这里没有滚动修饰符，内容超出屏幕的部分根本点不到
+                //（小屏/大字体下"关于"卡片直接掉出可视区）。weight 在可滚动容器里
+                // 不会分配空间，所以"关于"卡片的 weight 也一并去掉，改为内容自适应。
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             ScreenTitle(stringResource(R.string.settings_title), bottomPadding = if (isCompact) 8.dp else 16.dp)
@@ -700,7 +706,7 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
         Spacer(modifier = Modifier.height(cardSpacing))
 
         // Card 4: About
-        SlateCard(modifier = Modifier.weight(1f), fillHeight = true, contentPadding = cardPadding) {
+        SlateCard(contentPadding = cardPadding) {
             Text(
                 text = stringResource(R.string.app_name) + " v" + BuildConfig.VERSION_NAME,
                 fontSize = 15.sp,
@@ -716,9 +722,9 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                     uriHandler.openUri("https://github.com/guoxpeng/SwiftSlate-cn/releases/latest")
                 }
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
             SlateDivider()
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = stringResource(R.string.settings_made_by),
                 fontSize = 13.sp,

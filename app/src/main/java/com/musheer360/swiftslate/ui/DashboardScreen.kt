@@ -2,8 +2,11 @@ package com.musheer360.swiftslate.ui
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -33,6 +36,7 @@ import com.musheer360.swiftslate.SwiftSlateApp
 import com.musheer360.swiftslate.manager.CommandManager
 import com.musheer360.swiftslate.manager.KeyManager
 import com.musheer360.swiftslate.manager.StatsManager
+import com.musheer360.swiftslate.service.AssistantService
 import com.musheer360.swiftslate.ui.components.ScreenTitle
 import com.musheer360.swiftslate.ui.components.SlateCard
 import com.musheer360.swiftslate.ui.components.SlateDivider
@@ -107,6 +111,39 @@ private fun clearCrashMarker(context: Context) {
     }
 }
 
+/**
+ * Reads the raw secure setting that the system Settings app itself parses to draw its
+ * toggles. Unlike [checkServiceEnabled] — which reflects the *live bound-service list* and
+ * goes false the moment the process dies — this stays true while the toggle reads "on".
+ * Comparing the two is how we spot the stuck limbo behind "Dashboard says off, system
+ * settings says on": the toggle is on, the service process is actually dead.
+ * Reading this key needs no permission (only writing it does).
+ */
+private fun isEnabledInSecureSettings(context: Context): Boolean {
+    val expected = ComponentName(context, AssistantService::class.java).flattenToString()
+    val enabled = Settings.Secure.getString(
+        context.contentResolver,
+        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+    ) ?: return false
+    return enabled.split(':').any { part ->
+        part == expected ||
+            part.endsWith("/${AssistantService::class.java.name}") ||
+            ComponentName.unflattenFromString(part)?.let {
+                it.packageName == context.packageName && it.className == AssistantService::class.java.name
+            } == true
+    }
+}
+
+/** True when the system is already told not to battery-optimize us. */
+private fun isBatteryOptimizationIgnored(context: Context): Boolean {
+    return try {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        pm.isIgnoringBatteryOptimizations(context.packageName)
+    } catch (_: Exception) {
+        true // unknown — don't nag
+    }
+}
+
 @Composable
 fun DashboardScreen(keyManager: KeyManager, commandManager: CommandManager, statsManager: StatsManager) {
     val context = LocalContext.current
@@ -120,6 +157,12 @@ fun DashboardScreen(keyManager: KeyManager, commandManager: CommandManager, stat
     // Set when the process died unexpectedly (crash marker) or the framework holds the service
     // in the crashed limbo (hidden flag) — the enabled-state check cannot see either.
     var showKilledBanner by remember { mutableStateOf(false) }
+    // Stuck limbo: the system toggle reads "on" but the service isn't in the live enabled
+    // list (process dead, usually battery-killed). The plain "inactive" row above is
+    // misleading here, so this gets its own banner with the real recovery steps.
+    var isServiceStuck by remember { mutableStateOf(false) }
+    // Battery optimization: the #1 silent killer of accessibility services on OEM ROMs.
+    var isBatteryIgnored by remember { mutableStateOf(true) }
 
     // Stats state
     var monthlyRequests by remember { mutableIntStateOf(statsManager.monthlyRequests) }
@@ -148,10 +191,16 @@ fun DashboardScreen(keyManager: KeyManager, commandManager: CommandManager, stat
                     readCrashMarker(context) > 0L || isServiceCrashed(context)
                 )
             }
+            val (secureEnabled, batteryIgnored) = withContext(Dispatchers.IO) {
+                Pair(isEnabledInSecureSettings(context), isBatteryOptimizationIgnored(context))
+            }
             // In-memory read of the accessibility service list — no keychain decrypt involved.
             val newWhitelist = checkWhitelistServiceEnabled(context)
             isServiceEnabled = newEnabled
             isWhitelistEnabled = newWhitelist
+            // Stuck limbo: the system toggle reads "on" but the service isn't in the live list.
+            isServiceStuck = secureEnabled && !newEnabled
+            isBatteryIgnored = batteryIgnored
             keyCount = newKeyCount
             monthlyRequests = statsManager.monthlyRequests
             favoriteCommand = statsManager.favoriteCommand
@@ -280,6 +329,39 @@ fun DashboardScreen(keyManager: KeyManager, commandManager: CommandManager, stat
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Stuck-service banner: the system toggle reads "on" but the service process is dead
+        // (usually battery-killed, no crash marker left behind). The plain "inactive" row above
+        // is actively misleading here — the toggle is already on — so spell out the real
+        // recovery: turn it off and back on in system settings.
+        if (isServiceStuck) {
+            SlateCard {
+                Text(
+                    text = stringResource(R.string.dashboard_service_stuck_title),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.dashboard_service_stuck_message),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.heightIn(min = 48.dp)
+                ) {
+                    Text(stringResource(R.string.dashboard_service_stuck_action))
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         // Interrupted-service banner: the toggle can still read "on" while the process is dead.
         if (showKilledBanner) {
             SlateCard {
@@ -321,6 +403,46 @@ fun DashboardScreen(keyManager: KeyManager, commandManager: CommandManager, stat
                     ) {
                         Text(stringResource(R.string.dashboard_service_killed_dismiss))
                     }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Battery-optimization nudge: the #1 silent killer of accessibility services on OEM
+        // ROMs. One tap takes the user to the system "don't optimize" confirmation dialog.
+        if (!isBatteryIgnored) {
+            SlateCard {
+                Text(
+                    text = stringResource(R.string.dashboard_battery_title),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.dashboard_battery_message),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        try {
+                            context.startActivity(
+                                Intent(
+                                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                    Uri.parse("package:${context.packageName}")
+                                )
+                            )
+                        } catch (_: Exception) {
+                            context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                        }
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.heightIn(min = 48.dp)
+                ) {
+                    Text(stringResource(R.string.dashboard_battery_action))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))

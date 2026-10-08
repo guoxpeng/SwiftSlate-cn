@@ -149,6 +149,12 @@
     <string name="dashboard_service_killed_title">SwiftSlate 已中断</string>
     <string name="dashboard_service_killed_message">后台服务意外停止。请在无障碍设置中重新启用它，以继续使用命令。</string>
     <string name="dashboard_service_killed_dismiss">忽略</string>
+    <string name="dashboard_service_stuck_title">无障碍服务已卡死</string>
+    <string name="dashboard_service_stuck_message">系统设置里它的开关显示开着，但服务进程已经停止（多半被系统的省电策略杀掉了）。请去系统设置里先把它关掉，再重新打开，即可恢复。</string>
+    <string name="dashboard_service_stuck_action">去系统设置</string>
+    <string name="dashboard_battery_title">建议关闭电池优化</string>
+    <string name="dashboard_battery_message">系统省电策略会在后台悄悄杀掉无障碍服务，导致它突然停止工作。设为"无限制"可大幅减少被杀的概率。</string>
+    <string name="dashboard_battery_action">设为无限制</string>
 
     <!-- 微信兼容（仅 preview 提示） -->
     <string name="dashboard_wechat_hint_title">微信兼容</string>
