@@ -12,11 +12,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.musheer360.swiftslate.BuildConfig
 import com.musheer360.swiftslate.R
+import com.musheer360.swiftslate.api.ProxyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
-import java.net.URL
 
 class UpdateCheckWorker(
     context: Context,
@@ -78,8 +78,7 @@ class UpdateCheckWorker(
     }
 
     private fun fetchLatestRelease(): JSONObject? {
-        val url = URL(GITHUB_API_URL)
-        val connection = url.openConnection() as HttpURLConnection
+        val connection = ProxyManager.openConnection(GITHUB_API_URL)
         return try {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Accept", "application/vnd.github+json")

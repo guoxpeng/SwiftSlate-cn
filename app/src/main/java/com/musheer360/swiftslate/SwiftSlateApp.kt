@@ -9,6 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.musheer360.swiftslate.manager.KeyManager
+import com.musheer360.swiftslate.api.ProxyManager
 import com.musheer360.swiftslate.worker.UpdateCheckWorker
 import java.util.concurrent.TimeUnit
 
@@ -41,6 +42,8 @@ class SwiftSlateApp : Application() {
 
         installCrashMarker()
         scheduleUpdateCheck()
+        // Global API proxy (Settings). Installed once; clients read prefs live.
+        ProxyManager.init(getSharedPreferences("settings", Context.MODE_PRIVATE))
     }
 
     /**

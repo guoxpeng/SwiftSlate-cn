@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,6 +25,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musheer360.swiftslate.BuildConfig
@@ -91,6 +94,14 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
     var triggerPrefix by remember { mutableStateOf(commandManager.getTriggerPrefix()) }
     var prefixError by remember { mutableStateOf<String?>(null) }
     var temperature by remember { mutableStateOf(prefs.getFloat(PrefKeys.TEMPERATURE, 0.5f)) }
+
+    // Proxy settings. Applied globally to every API request via ProxyManager.
+    var proxyEnabled by remember { mutableStateOf(prefs.getBoolean(PrefKeys.PROXY_ENABLED, false)) }
+    var proxyType by remember { mutableStateOf(prefs.getString(PrefKeys.PROXY_TYPE, PrefKeys.PROXY_TYPE_HTTP) ?: PrefKeys.PROXY_TYPE_HTTP) }
+    var proxyHost by rememberSaveable { mutableStateOf(prefs.getString(PrefKeys.PROXY_HOST, "") ?: "") }
+    var proxyPort by rememberSaveable { mutableStateOf(prefs.getInt(PrefKeys.PROXY_PORT, 0).takeIf { it > 0 }?.toString() ?: "") }
+    var proxyUsername by rememberSaveable { mutableStateOf(prefs.getString(PrefKeys.PROXY_USERNAME, "") ?: "") }
+    var proxyPassword by rememberSaveable { mutableStateOf(prefs.getString(PrefKeys.PROXY_PASSWORD, "") ?: "") }
 
     val prefixErrorLength = stringResource(R.string.settings_prefix_error_length)
     val prefixErrorWhitespace = stringResource(R.string.settings_prefix_error_whitespace)
@@ -613,6 +624,110 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                     inactiveTrackColor = MaterialTheme.colorScheme.outline
                 )
             )
+            Spacer(modifier = Modifier.height(if (isCompact) 4.dp else 8.dp))
+        }
+
+        Spacer(modifier = Modifier.height(cardSpacing))
+
+        // Card: Proxy — routes ALL API traffic (every provider) through an
+        // HTTP/SOCKS5 proxy, e.g. a local Clash/V2RayNG (127.0.0.1:7890).
+        SlateCard(contentPadding = cardPadding) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_proxy_title),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = proxyEnabled,
+                    onCheckedChange = {
+                        proxyEnabled = it
+                        prefs.edit().putBoolean(PrefKeys.PROXY_ENABLED, it).apply()
+                    }
+                )
+            }
+            Text(
+                text = stringResource(R.string.settings_proxy_desc),
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            if (proxyEnabled) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AssistChip(
+                        onClick = {
+                            proxyType = PrefKeys.PROXY_TYPE_HTTP
+                            prefs.edit().putString(PrefKeys.PROXY_TYPE, PrefKeys.PROXY_TYPE_HTTP).apply()
+                        },
+                        label = { Text("HTTP") },
+                        leadingIcon = if (proxyType == PrefKeys.PROXY_TYPE_HTTP) {
+                            { Icon(Icons.Default.Check, contentDescription = null) }
+                        } else null
+                    )
+                    AssistChip(
+                        onClick = {
+                            proxyType = PrefKeys.PROXY_TYPE_SOCKS
+                            prefs.edit().putString(PrefKeys.PROXY_TYPE, PrefKeys.PROXY_TYPE_SOCKS).apply()
+                        },
+                        label = { Text("SOCKS5") },
+                        leadingIcon = if (proxyType == PrefKeys.PROXY_TYPE_SOCKS) {
+                            { Icon(Icons.Default.Check, contentDescription = null) }
+                        } else null
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SlateTextField(
+                        value = proxyHost,
+                        onValueChange = {
+                            proxyHost = it
+                            prefs.edit().putString(PrefKeys.PROXY_HOST, it.trim()).apply()
+                        },
+                        label = { Text(stringResource(R.string.settings_proxy_host)) },
+                        placeholder = { Text("127.0.0.1") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    SlateTextField(
+                        value = proxyPort,
+                        onValueChange = { input ->
+                            val filtered = input.filter { it.isDigit() }.take(5)
+                            proxyPort = filtered
+                            prefs.edit().putInt(PrefKeys.PROXY_PORT, filtered.toIntOrNull() ?: 0).apply()
+                        },
+                        label = { Text(stringResource(R.string.settings_proxy_port)) },
+                        placeholder = { Text("7890") },
+                        modifier = Modifier.width(110.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SlateTextField(
+                        value = proxyUsername,
+                        onValueChange = {
+                            proxyUsername = it
+                            prefs.edit().putString(PrefKeys.PROXY_USERNAME, it).apply()
+                        },
+                        label = { Text(stringResource(R.string.settings_proxy_username)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    SlateTextField(
+                        value = proxyPassword,
+                        onValueChange = {
+                            proxyPassword = it
+                            prefs.edit().putString(PrefKeys.PROXY_PASSWORD, it).apply()
+                        },
+                        label = { Text(stringResource(R.string.settings_proxy_password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(if (isCompact) 4.dp else 8.dp))
         }
 

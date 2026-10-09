@@ -8,7 +8,6 @@ import org.json.JSONObject
 import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.net.URL
 import java.net.UnknownHostException
 
 class OpenAICompatibleClient {
@@ -24,8 +23,7 @@ class OpenAICompatibleClient {
         var connection: HttpURLConnection? = null
         try {
             val baseUrl = endpoint.trimEnd('/')
-            connection = URL("$baseUrl/models")
-                .openConnection() as HttpURLConnection
+            connection = ProxyManager.openConnection("$baseUrl/models")
             connection.requestMethod = "GET"
             connection.setRequestProperty("Authorization", "Bearer $apiKey")
             connection.connectTimeout = 15_000
@@ -86,7 +84,7 @@ class OpenAICompatibleClient {
     private fun probeModels(url: String, apiKey: String): Boolean {
         var probe: HttpURLConnection? = null
         return try {
-            probe = URL(url).openConnection() as HttpURLConnection
+            probe = ProxyManager.openConnection(url)
             probe.requestMethod = "GET"
             probe.setRequestProperty("Authorization", "Bearer $apiKey")
             probe.connectTimeout = 15_000
@@ -176,7 +174,7 @@ class OpenAICompatibleClient {
     private fun httpGet(url: String, apiKey: String?): Probe {
         var connection: HttpURLConnection? = null
         return try {
-            connection = URL(url).openConnection() as HttpURLConnection
+            connection = ProxyManager.openConnection(url)
             connection.requestMethod = "GET"
             if (!apiKey.isNullOrBlank()) {
                 connection.setRequestProperty("Authorization", "Bearer $apiKey")
@@ -240,8 +238,7 @@ class OpenAICompatibleClient {
         var connection: HttpURLConnection? = null
         return try {
             val baseUrl = endpoint.trimEnd('/')
-            connection = URL("$baseUrl/chat/completions")
-                .openConnection() as HttpURLConnection
+            connection = ProxyManager.openConnection("$baseUrl/chat/completions")
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Authorization", "Bearer $apiKey")

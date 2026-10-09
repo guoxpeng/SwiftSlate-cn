@@ -30,4 +30,24 @@ object PrefKeys {
 
     /** Epoch millis when structured output was last disabled (0 = never). */
     const val STRUCTURED_OUTPUT_DISABLED_AT = "structured_output_disabled_at"
+
+    /** Proxy enabled (Boolean). When on, ALL API traffic goes through the proxy. */
+    const val PROXY_ENABLED = "proxy_enabled"
+
+    /** Proxy type: "http" or "socks" (see [PROXY_TYPE_HTTP]/[PROXY_TYPE_SOCKS]). */
+    const val PROXY_TYPE = "proxy_type"
+    const val PROXY_TYPE_HTTP = "http"
+    const val PROXY_TYPE_SOCKS = "socks"
+
+    /** Proxy host (String), e.g. 127.0.0.1 for a local Clash/V2RayNG. */
+    const val PROXY_HOST = "proxy_host"
+
+    /** Proxy port (Int). */
+    const val PROXY_PORT = "proxy_port"
+
+    /** Proxy auth username (String, optional). */
+    const val PROXY_USERNAME = "proxy_username"
+
+    /** Proxy auth password (String, optional). Stored as-is in prefs. */
+    const val PROXY_PASSWORD = "proxy_password"
 }

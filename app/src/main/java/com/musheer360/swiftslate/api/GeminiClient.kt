@@ -7,7 +7,6 @@ import org.json.JSONObject
 import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
 
@@ -63,8 +62,7 @@ class GeminiClient {
     suspend fun validateKey(apiKey: String): Result<String> = withContext(Dispatchers.IO) {
         var connection: HttpURLConnection? = null
         try {
-            connection = URL("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1")
-                .openConnection() as HttpURLConnection
+            connection = ProxyManager.openConnection("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1")
             connection.requestMethod = "GET"
             connection.setRequestProperty("x-goog-api-key", apiKey)
             connection.connectTimeout = 15_000
@@ -120,8 +118,7 @@ class GeminiClient {
                 val responseCode: Int
                 val body: String
                 try {
-                    connection = URL("$MODELS_URL?pageSize=1000$pageSuffix")
-                        .openConnection() as HttpURLConnection
+                    connection = ProxyManager.openConnection("$MODELS_URL?pageSize=1000$pageSuffix")
                     connection.requestMethod = "GET"
                     connection.setRequestProperty("x-goog-api-key", apiKey)
                     connection.connectTimeout = 15_000
@@ -206,8 +203,7 @@ class GeminiClient {
         var connection: HttpURLConnection? = null
         return try {
             val safeModel = model.replace(Regex("[^a-zA-Z0-9._-]"), "")
-            connection = URL("https://generativelanguage.googleapis.com/v1beta/models/$safeModel:generateContent")
-                .openConnection() as HttpURLConnection
+            connection = ProxyManager.openConnection("https://generativelanguage.googleapis.com/v1beta/models/$safeModel:generateContent")
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("x-goog-api-key", apiKey)

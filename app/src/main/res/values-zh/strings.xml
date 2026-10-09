@@ -60,6 +60,12 @@
     <string name="settings_endpoint_title">端点</string>
     <string name="settings_endpoint_placeholder">https://api.example.com/v1</string>
     <string name="settings_preset_title">国产接口预设 — 点一下自动填</string>
+    <string name="settings_proxy_title">代理</string>
+    <string name="settings_proxy_desc">所有接口请求都走这个代理，比如本机的 Clash / V2RayNG（127.0.0.1:7890）。用户名和密码选填。</string>
+    <string name="settings_proxy_host">地址</string>
+    <string name="settings_proxy_port">端口</string>
+    <string name="settings_proxy_username">用户名（选填）</string>
+    <string name="settings_proxy_password">密码（选填）</string>
     <string name="settings_model_placeholder">gpt-4o、claude-3-haiku 等</string>
     <string name="settings_trigger_prefix_desc">命令名称前使用的符号（例如 %1$sfix）。</string>
     <string name="settings_prefix_error_length">必须恰好为 1 个字符</string>
