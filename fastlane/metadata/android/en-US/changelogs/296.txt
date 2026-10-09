@@ -1,0 +1,4 @@
+- 修复：新字符串加 tools:ignore，MissingTranslation 按仓库惯例处理
+- 修复：代理开关开了但地址没填时给出红色提示
+- 新增：全局 HTTP/SOCKS5 代理
+- 新增：自定义接口增加国产 API 预设
