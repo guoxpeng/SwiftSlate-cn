@@ -30,6 +30,7 @@ import com.musheer360.swiftslate.R
 import com.musheer360.swiftslate.api.ApiClientUtils
 import com.musheer360.swiftslate.api.GeminiClient
 import com.musheer360.swiftslate.api.OpenAICompatibleClient
+import com.musheer360.swiftslate.provider.DomesticPresets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -389,6 +390,38 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                // Domestic API presets: one tap fills the endpoint (and a default
+                // model when the model field is still empty).
+                Text(
+                    text = stringResource(R.string.settings_preset_title),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    DomesticPresets.ALL.forEach { preset ->
+                        AssistChip(
+                            onClick = {
+                                customEndpoint = preset.endpoint
+                                endpointError = null
+                                prefs.edit().putString(PrefKeys.CUSTOM_ENDPOINT, preset.endpoint).apply()
+                                // Don't clobber a model the user already typed.
+                                if (customModel.isBlank()) {
+                                    customModel = preset.defaultModel
+                                    prefs.edit().putString(PrefKeys.CUSTOM_MODEL, preset.defaultModel).apply()
+                                }
+                                customModels = emptyList()
+                                fetchMessage = null
+                            },
+                            label = { Text(preset.label) }
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 SlateTextField(
                     value = customEndpoint,

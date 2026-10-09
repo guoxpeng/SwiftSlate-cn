@@ -58,6 +58,7 @@
     <string name="settings_temperature_title">Temperature</string>
     <string name="settings_endpoint_title">Endpoint</string>
     <string name="settings_endpoint_placeholder">https://api.example.com/v1</string>
+    <string name="settings_preset_title">Domestic presets — tap to fill</string>
     <string name="settings_model_placeholder">gpt-4o, claude-3-haiku, etc.</string>
     <string name="settings_trigger_prefix_desc">Symbol used before command names (e.g., %1$sfix).</string>
     <string name="settings_prefix_error_length">Must be exactly 1 character</string>
