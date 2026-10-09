@@ -66,6 +66,7 @@
     <string name="settings_proxy_port">端口</string>
     <string name="settings_proxy_username">用户名（选填）</string>
     <string name="settings_proxy_password">密码（选填）</string>
+    <string name="settings_proxy_incomplete">地址或端口没填，当前是直连，没有走代理。</string>
     <string name="settings_model_placeholder">gpt-4o、claude-3-haiku 等</string>
     <string name="settings_trigger_prefix_desc">命令名称前使用的符号（例如 %1$sfix）。</string>
     <string name="settings_prefix_error_length">必须恰好为 1 个字符</string>

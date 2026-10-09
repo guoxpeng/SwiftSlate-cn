@@ -629,7 +629,7 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
 
         Spacer(modifier = Modifier.height(cardSpacing))
 
-        // Card: Proxy — routes ALL API traffic (every provider) through an
+        // Card 2: Proxy — routes ALL API traffic (every provider) through an
         // HTTP/SOCKS5 proxy, e.g. a local Clash/V2RayNG (127.0.0.1:7890).
         SlateCard(contentPadding = cardPadding) {
             Row(
@@ -659,6 +659,17 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
             )
             if (proxyEnabled) {
                 Spacer(modifier = Modifier.height(8.dp))
+                // Warn when the toggle is on but no usable proxy is configured —
+                // otherwise the user believes traffic is proxied while it goes direct.
+                val proxyReady = proxyHost.isNotBlank() && (proxyPort.toIntOrNull() ?: 0) in 1..65535
+                if (!proxyReady) {
+                    Text(
+                        text = stringResource(R.string.settings_proxy_incomplete),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AssistChip(
                         onClick = {
@@ -733,7 +744,7 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
 
         Spacer(modifier = Modifier.height(cardSpacing))
 
-        // Card 2: Trigger Prefix
+        // Card 3: Trigger Prefix
         SlateCard(contentPadding = cardPadding) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -778,7 +789,7 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
 
         Spacer(modifier = Modifier.height(cardSpacing))
 
-        // Card 3: Backup
+        // Card 4: Backup
         SlateCard(contentPadding = cardPadding) {
             Text(
                 text = stringResource(R.string.backup_desc),
@@ -853,7 +864,7 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
 
         Spacer(modifier = Modifier.height(cardSpacing))
 
-        // Card 4: About
+        // Card 5: About
         SlateCard(contentPadding = cardPadding) {
             Text(
                 text = stringResource(R.string.app_name) + " v" + BuildConfig.VERSION_NAME,

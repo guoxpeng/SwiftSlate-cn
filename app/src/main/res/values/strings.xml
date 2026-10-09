@@ -65,6 +65,7 @@
     <string name="settings_proxy_port">Port</string>
     <string name="settings_proxy_username">Username (optional)</string>
     <string name="settings_proxy_password">Password (optional)</string>
+    <string name="settings_proxy_incomplete">Host or port is missing — traffic is going direct, not through the proxy.</string>
     <string name="settings_model_placeholder">gpt-4o, claude-3-haiku, etc.</string>
     <string name="settings_trigger_prefix_desc">Symbol used before command names (e.g., %1$sfix).</string>
     <string name="settings_prefix_error_length">Must be exactly 1 character</string>
