@@ -58,14 +58,14 @@
     <string name="settings_temperature_title">Temperature</string>
     <string name="settings_endpoint_title">Endpoint</string>
     <string name="settings_endpoint_placeholder">https://api.example.com/v1</string>
-    <string name="settings_preset_title">Domestic presets — tap to fill</string>
-    <string name="settings_proxy_title">Proxy</string>
-    <string name="settings_proxy_desc">Route all API requests through this proxy, e.g. a local Clash / V2RayNG (127.0.0.1:7890). Username and password are optional.</string>
-    <string name="settings_proxy_host">Host</string>
-    <string name="settings_proxy_port">Port</string>
-    <string name="settings_proxy_username">Username (optional)</string>
-    <string name="settings_proxy_password">Password (optional)</string>
-    <string name="settings_proxy_incomplete">Host or port is missing — traffic is going direct, not through the proxy.</string>
+    <string name="settings_preset_title" tools:ignore="MissingTranslation">Domestic presets — tap to fill</string>
+    <string name="settings_proxy_title" tools:ignore="MissingTranslation">Proxy</string>
+    <string name="settings_proxy_desc" tools:ignore="MissingTranslation">Route all API requests through this proxy, e.g. a local Clash / V2RayNG (127.0.0.1:7890). Username and password are optional.</string>
+    <string name="settings_proxy_host" tools:ignore="MissingTranslation">Host</string>
+    <string name="settings_proxy_port" tools:ignore="MissingTranslation">Port</string>
+    <string name="settings_proxy_username" tools:ignore="MissingTranslation">Username (optional)</string>
+    <string name="settings_proxy_password" tools:ignore="MissingTranslation">Password (optional)</string>
+    <string name="settings_proxy_incomplete" tools:ignore="MissingTranslation">Host or port is missing — traffic is going direct, not through the proxy.</string>
     <string name="settings_model_placeholder">gpt-4o, claude-3-haiku, etc.</string>
     <string name="settings_trigger_prefix_desc">Symbol used before command names (e.g., %1$sfix).</string>
     <string name="settings_prefix_error_length">Must be exactly 1 character</string>
