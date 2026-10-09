@@ -104,11 +104,64 @@ object CustomConfig : ProviderConfig {
         model.isNotBlank() && endpoint.isNotBlank()
 }
 
+/**
+ * Base for fixed-endpoint OpenAI-compatible providers with no per-model
+ * reasoning quirks (DeepSeek, Qwen, Zhipu, Kimi). The endpoint is fixed; the
+ * model list is fetched live from /models and any id the API accepts is kept.
+ */
+abstract class FixedOpenAIConfig(
+    override val type: String,
+    private val endpoint: String,
+    override val modelPrefKey: String,
+    override val defaultModel: String,
+) : ProviderConfig {
+    override val transport = Transport.OPENAI_COMPAT
+    override fun sanitizeModel(stored: String?): String =
+        stored?.trim().takeIf { !it.isNullOrEmpty() } ?: defaultModel
+    override fun resolveEndpoint(customEndpoint: String): String = endpoint
+}
+
+/** DeepSeek — OpenAI-compatible, fixed endpoint. */
+object DeepSeekConfig : FixedOpenAIConfig(
+    type = ProviderType.DEEPSEEK,
+    endpoint = "https://api.deepseek.com/v1",
+    modelPrefKey = PrefKeys.DEEPSEEK_MODEL,
+    defaultModel = "deepseek-chat",
+)
+
+/** Qwen (通义千问) — OpenAI-compatible, fixed endpoint. */
+object QwenConfig : FixedOpenAIConfig(
+    type = ProviderType.QWEN,
+    endpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    modelPrefKey = PrefKeys.QWEN_MODEL,
+    defaultModel = "qwen-plus",
+)
+
+/** Zhipu (智谱 GLM) — OpenAI-compatible, fixed endpoint. */
+object ZhipuConfig : FixedOpenAIConfig(
+    type = ProviderType.ZHIPU,
+    endpoint = "https://open.bigmodel.cn/api/paas/v4/",
+    modelPrefKey = PrefKeys.ZHIPU_MODEL,
+    defaultModel = "glm-4",
+)
+
+/** Kimi (Moonshot) — OpenAI-compatible, fixed endpoint. */
+object KimiConfig : FixedOpenAIConfig(
+    type = ProviderType.KIMI,
+    endpoint = "https://api.moonshot.cn/v1",
+    modelPrefKey = PrefKeys.KIMI_MODEL,
+    defaultModel = "moonshot-v1-8k",
+)
+
 /** Registry resolving a stored provider value to its [ProviderConfig]. */
 object Providers {
     fun forType(type: String?): ProviderConfig = when (ProviderType.sanitize(type)) {
         ProviderType.GROQ -> GroqConfig
         ProviderType.CUSTOM -> CustomConfig
+        ProviderType.DEEPSEEK -> DeepSeekConfig
+        ProviderType.QWEN -> QwenConfig
+        ProviderType.ZHIPU -> ZhipuConfig
+        ProviderType.KIMI -> KimiConfig
         else -> GeminiConfig
     }
 }

@@ -54,11 +54,14 @@
     <string name="settings_provider_gemini">Google Gemini</string>
     <string name="settings_provider_groq">Groq</string>
     <string name="settings_provider_custom">Custom (OpenAI Compatible)</string>
+    <string name="settings_provider_deepseek" tools:ignore="MissingTranslation">DeepSeek</string>
+    <string name="settings_provider_qwen" tools:ignore="MissingTranslation">Qwen (Alibaba)</string>
+    <string name="settings_provider_zhipu" tools:ignore="MissingTranslation">Zhipu GLM</string>
+    <string name="settings_provider_kimi" tools:ignore="MissingTranslation">Kimi (Moonshot)</string>
     <string name="settings_model_title">Model</string>
     <string name="settings_temperature_title">Temperature</string>
     <string name="settings_endpoint_title">Endpoint</string>
     <string name="settings_endpoint_placeholder">https://api.example.com/v1</string>
-    <string name="settings_preset_title" tools:ignore="MissingTranslation">Domestic presets — tap to fill</string>
     <string name="settings_proxy_title" tools:ignore="MissingTranslation">Proxy</string>
     <string name="settings_proxy_desc" tools:ignore="MissingTranslation">Route all API requests through this proxy, e.g. a local Clash / V2RayNG (127.0.0.1:7890). Username and password are optional.</string>
     <string name="settings_proxy_host" tools:ignore="MissingTranslation">Host</string>

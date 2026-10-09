@@ -33,7 +33,8 @@ import com.musheer360.swiftslate.R
 import com.musheer360.swiftslate.api.ApiClientUtils
 import com.musheer360.swiftslate.api.GeminiClient
 import com.musheer360.swiftslate.api.OpenAICompatibleClient
-import com.musheer360.swiftslate.provider.DomesticPresets
+import com.musheer360.swiftslate.provider.FixedOpenAIConfig
+import com.musheer360.swiftslate.provider.Providers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -296,6 +297,10 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                     value = when (providerType) {
                         ProviderType.GEMINI -> stringResource(R.string.settings_provider_gemini)
                         ProviderType.GROQ -> stringResource(R.string.settings_provider_groq)
+                        ProviderType.DEEPSEEK -> stringResource(R.string.settings_provider_deepseek)
+                        ProviderType.QWEN -> stringResource(R.string.settings_provider_qwen)
+                        ProviderType.ZHIPU -> stringResource(R.string.settings_provider_zhipu)
+                        ProviderType.KIMI -> stringResource(R.string.settings_provider_kimi)
                         else -> stringResource(R.string.settings_provider_custom)
                     },
                     onValueChange = {},
@@ -324,6 +329,42 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             providerType = ProviderType.GROQ
                             prefs.edit().putString(PrefKeys.PROVIDER_TYPE, ProviderType.GROQ).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
+                            providerExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.settings_provider_deepseek)) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            providerType = ProviderType.DEEPSEEK
+                            prefs.edit().putString(PrefKeys.PROVIDER_TYPE, ProviderType.DEEPSEEK).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
+                            providerExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.settings_provider_qwen)) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            providerType = ProviderType.QWEN
+                            prefs.edit().putString(PrefKeys.PROVIDER_TYPE, ProviderType.QWEN).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
+                            providerExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.settings_provider_zhipu)) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            providerType = ProviderType.ZHIPU
+                            prefs.edit().putString(PrefKeys.PROVIDER_TYPE, ProviderType.ZHIPU).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
+                            providerExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.settings_provider_kimi)) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            providerType = ProviderType.KIMI
+                            prefs.edit().putString(PrefKeys.PROVIDER_TYPE, ProviderType.KIMI).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
                             providerExpanded = false
                         }
                     )
@@ -395,44 +436,20 @@ fun SettingsScreen(commandManager: CommandManager, prefs: SharedPreferences, key
                     isFetching = isFetchingGroqModels,
                     fetchingText = fetchingModelsMsg
                 )
+            } else if (Providers.forType(providerType) is FixedOpenAIConfig) {
+                // DeepSeek / Qwen / Zhipu / Kimi: fixed endpoint, model list from /models.
+                FixedEndpointModelSection(
+                    config = Providers.forType(providerType) as FixedOpenAIConfig,
+                    prefs = prefs,
+                    apiKeys = apiKeys,
+                    openAIClient = openAIClient,
+                )
             } else {
                 Text(
                     text = stringResource(R.string.settings_endpoint_title),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Domestic API presets: one tap fills the endpoint (and a default
-                // model when the model field is still empty).
-                Text(
-                    text = stringResource(R.string.settings_preset_title),
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                @OptIn(ExperimentalLayoutApi::class)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    DomesticPresets.ALL.forEach { preset ->
-                        AssistChip(
-                            onClick = {
-                                customEndpoint = preset.endpoint
-                                endpointError = null
-                                prefs.edit().putString(PrefKeys.CUSTOM_ENDPOINT, preset.endpoint).apply()
-                                // Don't clobber a model the user already typed.
-                                if (customModel.isBlank()) {
-                                    customModel = preset.defaultModel
-                                    prefs.edit().putString(PrefKeys.CUSTOM_MODEL, preset.defaultModel).apply()
-                                }
-                                customModels = emptyList()
-                                fetchMessage = null
-                            },
-                            label = { Text(preset.label) }
-                        )
-                    }
-                }
                 Spacer(modifier = Modifier.height(8.dp))
                 SlateTextField(
                     value = customEndpoint,
@@ -946,6 +963,76 @@ internal fun preferredModel(models: List<String>, default: String): String =
  * real-time fetch when opened, and caps its height with vertical scroll
  * so long provider catalogs stay usable.
  */
+/**
+ * Model selector for fixed-endpoint OpenAI-compatible providers (DeepSeek, Qwen,
+ * Zhipu, Kimi). All state is keyed on [config.type], so one composable serves all
+ * of them. The model list is fetched live from the provider's /models endpoint
+ * when the dropdown opens; with no API key yet, the stored value (or default)
+ * is shown and the dropdown stays disabled, matching the Groq section's behavior.
+ */
+@Composable
+private fun FixedEndpointModelSection(
+    config: FixedOpenAIConfig,
+    prefs: SharedPreferences,
+    apiKeys: List<String>,
+    openAIClient: OpenAICompatibleClient,
+) {
+    val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
+    val fetchingText = stringResource(R.string.settings_fetch_models_loading)
+
+    var model by remember(config.type) {
+        mutableStateOf(config.sanitizeModel(prefs.getString(config.modelPrefKey, null)))
+    }
+    var modelList by remember(config.type) { mutableStateOf(emptyList<String>()) }
+    var expanded by remember(config.type) { mutableStateOf(false) }
+    var isFetching by remember(config.type) { mutableStateOf(false) }
+
+    Text(
+        text = stringResource(R.string.settings_model_title),
+        fontSize = 13.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(6.dp))
+    DynamicModelDropdown(
+        selectedModel = if (apiKeys.isEmpty() || model.isBlank()) "" else model,
+        enabled = apiKeys.isNotEmpty(),
+        expanded = expanded,
+        onExpandedChange = { isOpening ->
+            expanded = isOpening
+            if (isOpening && apiKeys.isNotEmpty() && !isFetching) {
+                isFetching = true
+                scope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        openAIClient.fetchModels(apiKeys.firstOrNull(), config.resolveEndpoint(""))
+                    }
+                    isFetching = false
+                    result.onSuccess { ids ->
+                        if (ids.isNotEmpty()) {
+                            modelList = ids
+                            if (model.isBlank()) {
+                                val pick = if (config.defaultModel in ids) config.defaultModel else ids.first()
+                                model = pick
+                                prefs.edit().putString(config.modelPrefKey, pick).apply()
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        models = modelList,
+        onSelect = { id ->
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            model = id
+            prefs.edit().putString(config.modelPrefKey, id).remove(PrefKeys.STRUCTURED_OUTPUT_DISABLED_AT).apply()
+            expanded = false
+        },
+        onDismiss = { expanded = false },
+        isFetching = isFetching,
+        fetchingText = fetchingText
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DynamicModelDropdown(

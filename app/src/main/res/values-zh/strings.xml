@@ -55,11 +55,14 @@
     <string name="settings_provider_gemini">Google Gemini</string>
     <string name="settings_provider_groq">Groq</string>
     <string name="settings_provider_custom">自定义（兼容 OpenAI）</string>
+    <string name="settings_provider_deepseek">DeepSeek</string>
+    <string name="settings_provider_qwen">通义千问</string>
+    <string name="settings_provider_zhipu">智谱 GLM</string>
+    <string name="settings_provider_kimi">Kimi</string>
     <string name="settings_model_title">模型</string>
     <string name="settings_temperature_title">温度</string>
     <string name="settings_endpoint_title">端点</string>
     <string name="settings_endpoint_placeholder">https://api.example.com/v1</string>
-    <string name="settings_preset_title">国产接口预设 — 点一下自动填</string>
     <string name="settings_proxy_title">代理</string>
     <string name="settings_proxy_desc">所有接口请求都走这个代理，比如本机的 Clash / V2RayNG（127.0.0.1:7890）。用户名和密码选填。</string>
     <string name="settings_proxy_host">地址</string>

@@ -22,6 +22,18 @@ object PrefKeys {
     /** Custom (OpenAI-compatible) model id. */
     const val CUSTOM_MODEL = "custom_model"
 
+    /** Selected DeepSeek model id. */
+    const val DEEPSEEK_MODEL = "deepseek_model"
+
+    /** Selected Qwen (通义千问) model id. */
+    const val QWEN_MODEL = "qwen_model"
+
+    /** Selected Zhipu (智谱 GLM) model id. */
+    const val ZHIPU_MODEL = "zhipu_model"
+
+    /** Selected Kimi (Moonshot) model id. */
+    const val KIMI_MODEL = "kimi_model"
+
     /** Custom (OpenAI-compatible) endpoint base URL. */
     const val CUSTOM_ENDPOINT = "custom_endpoint"
 
